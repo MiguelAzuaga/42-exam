@@ -31,108 +31,88 @@ $> ./rip '(()(()(' | cat -e
 #include <stdio.h>
 #include <unistd.h>
 
-int ft_abs(int n)
+int	is_valid(char *str, int *rm, int rm_size)
 {
-	return ((n >= 0) ? n : -n);
-}
+	int i = 0, j = 0;
+	int balance = 0;
 
-int is_solved(char *str)
-{
-	int i = 0, balance = 0;
-	while (str[i])
+	for (i = 0; str[i]; i++)
 	{
+		if (j < rm_size && i == rm[j])
+		{
+			j++;
+			continue ;
+		}
 		if (str[i] == '(')
 			balance++;
-		else if (str[i] == ')')
-		{
-			balance--;
-			if (balance < 0)
-				return 0;
-		}
-		i++;
+		if (str[i] == ')')
+			if (--balance < 0)
+				return (0);
 	}
 	return (balance == 0);
 }
 
-// Try all combinations of removing `qty` occurrences of `c`
-void get_answer(char *str, char c, int qty)
+void print_solution(char *str, int *rm, int rm_size)
 {
-	int len = 0, i;
-	while (str[len])
-		len++;
-
-	int total = 0;
-	for (i = 0; i < len; i++)
-		if (str[i] == c)
-			total++;
-
-	int max_mask = 1 << total;
-	for (int mask = 0; mask < max_mask; mask++)
+	int j = 0;
+	for (int i = 0; str[i]; i++)
 	{
-		// Count bits set to 1
-		int count = 0;
-		for (int b = 0; b < total; b++)
-			if ((mask >> b) & 1)
-				count++;
-
-		if (count != qty)
-			continue;
-
-		// Backup original characters
-		char backup[256];  // assuming max input length < 256
-		for (i = 0; i < len; i++)
-			backup[i] = str[i];
-
-		int skip_idx = 0;
-		for (i = 0; i < len; i++)
+		if (j < rm_size && i == rm[j])
 		{
-			if (str[i] == c)
-			{
-				if ((mask >> skip_idx) & 1)
-					str[i] = ' ';
-				skip_idx++;
-			}
+			write(1, " ", 1);
+			j++;
 		}
-
-		if (is_solved(str))
-			puts(str);
-
-		// Restore string
-		for (i = 0; i < len; i++)
-			str[i] = backup[i];
+		else
+			write(1, &str[i], 1);
 	}
+	write(1, "\n", 1);
+}
+
+void	solve(char *str, int str_size, int *rm, int rm_size, int start, int i)
+{
+	if (i == rm_size)
+	{
+		if (is_valid(str, rm, rm_size))
+			print_solution(str, rm, rm_size);
+		return ;
+	}
+	int j = start;
+	while (j < str_size)
+	{
+		rm[i] = j;
+		solve(str, str_size, rm, rm_size, start + 1, i + 1);
+		j++;
+	}
+	
 }
 
 int main(int argc, char **argv)
 {
 	if (argc != 2)
-		return 1;
+		return (1);
 
-	char *str = argv[1];
-	int open = 0, close = 0, i = 0;
+	char	*str = argv[1];
+	int		balance = 0
+	int		remove = 0;
 
 	while (str[i])
 	{
 		if (str[i] == '(')
-			open++;
+		{
+			balance++;
+		}
 		else if (str[i] == ')')
-			close++;
+		{
+			if (balance > 0)
+				balance--;
+			else
+				remove ++;
+		}
+
 		i++;
 	}
-
-	int balance = open - close;
-
-	if (balance == 0)
-	{
-		if (is_solved(str))
-			puts(str);
-		else
-			get_answer(str, ')', 1);
-	}
-	else if (balance > 0)
-		get_answer(str, '(', balance);
-	else
-		get_answer(str, ')', -balance);
-
-	return 0;
+	remove += balance;
+	int rm[remove];
+	solve(str, i, rm, remove, 0, 0);
+	return (0);
 }
