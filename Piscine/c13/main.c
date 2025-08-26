@@ -2,9 +2,23 @@
 #include <string.h>
 #include "ft_btree.h"
 
+void free_tree(t_btree *root)
+{
+	if (!root)
+		return ;
+	free_tree(root->left);
+	free_tree(root->right);
+	free(root);
+}
+
 void	print_item(void *item)
 {
 	printf("%s ", (char *)item);
+}
+
+void	print_node(void *item, int lvl, int is_first)
+{
+	printf("Level %d: %s %s\n", lvl + 1, (char *)item, is_first ? "(first)" : "");
 }
 
 int ft_strcmp(void *a, void *b)
@@ -37,19 +51,30 @@ int	main(void)
 	// ex03 Postorder
 	printf("Suffix	(Left, Right, Root): ");
 	btree_apply_suffix(root, &print_item);
-	printf("\n");
+	printf("\n\n");
 
 	// Reset tree (leaks)
 	root = NULL;
-
-	btree_insert_data(&root, "dog", ft_strcmp);
-	btree_insert_data(&root, "cat", ft_strcmp);
 	btree_insert_data(&root, "elk", ft_strcmp);
+	btree_insert_data(&root, "cat", ft_strcmp);
+	btree_insert_data(&root, "dog", ft_strcmp);
 	btree_insert_data(&root, "ant", ft_strcmp);
+	btree_insert_data(&root, "fox", ft_strcmp);
+	btree_insert_data(&root, "gnu", ft_strcmp);
 	btree_insert_data(&root, "bee", ft_strcmp);
-
 	printf("Infix traversal (should be sorted): ");
 	btree_apply_infix(root, &print_item);
-	printf("\n");
+	printf("\n\n");
+
+	char *find = "cat";
+	char *result = (char *)btree_search_item(root, find, ft_strcmp);
+	result ? printf("Found: %s\n", result) : printf("Not found: %s\n", find);
+	find = "ray";
+	result = (char *)btree_search_item(root, find, ft_strcmp);
+	result ? printf("Found: %s\n\n", result) : printf("Not found: %s\n\n", find);
+	printf("Depth: %d\n", btree_level_count(root));
+
+	btree_apply_by_level(root, print_node);
+	free_tree(root);
 	return (0);
 }

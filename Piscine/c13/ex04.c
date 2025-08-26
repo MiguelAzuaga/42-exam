@@ -1,7 +1,7 @@
 #include "ft_btree.h"
-#include <stdio.h>
 
-void	btree_insert_data(t_btree **root, void *item, int (*cmpf)(void *, void *))
+void	btree_insert_data(t_btree **root, void *item,
+	int (*cmpf)(void *, void *))
 {
 	if (!root)
 		return ;
@@ -14,5 +14,4 @@ void	btree_insert_data(t_btree **root, void *item, int (*cmpf)(void *, void *))
 		btree_insert_data(&(*root)->left, item, cmpf);
 	else
 		btree_insert_data(&(*root)->right, item, cmpf);
-
 }
