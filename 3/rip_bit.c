@@ -31,58 +31,51 @@ $> ./rip '(()(()(' | cat -e
 #include <stdio.h>
 #include <unistd.h>
 
-int	is_valid(char *str, int *rm, int rm_size)
+int check_bits(int mask)
 {
-	int i = 0, j = 0;
-	int balance = 0;
+	int count = 0;
 
-	for (i = 0; str[i]; i++)
+	while (mask)
 	{
-		if (j < rm_size && i == rm[j])
+		count += mask & 1;
+		mask >>= 1;
+	}
+	return (count);
+}
+
+int is_balanced(char *str, int mask)
+{
+	int i = 0, balance = 0;
+	while (str[i])
+	{
+		if ((mask & (1 << i)) == 0)
 		{
-			j++;
-			continue ;
+			if (str[i] == '(')
+				balance++;
+			else if (str[i] == ')')
+			{
+				if (balance == 0)
+					return (0);
+				balance--;
+			}
 		}
-		if (str[i] == '(')
-			balance++;
-		if (str[i] == ')')
-			if (--balance < 0)
-				return (0);
+		i++;
 	}
 	return (balance == 0);
 }
 
-void print_solution(char *str, int *rm, int rm_size)
+void print_solution(char *str, int mask)
 {
-	int j = 0;
-	for (int i = 0; str[i]; i++)
+	int i = 0;
+	while (str[i])
 	{
-		if (j < rm_size && i == rm[j])
-		{
+		if (mask & (1 << i))
 			write(1, " ", 1);
-			j++;
-		}
 		else
 			write(1, &str[i], 1);
+		i++;
 	}
 	write(1, "\n", 1);
-}
-
-void	solve(char *str, int str_size, int *rm, int rm_size, int start, int i)
-{
-	if (i == rm_size)
-	{
-		if (is_valid(str, rm, rm_size))
-			print_solution(str, rm, rm_size);
-		return ;
-	}
-	int j = start;
-	while (j < str_size)
-	{
-		rm[i] = j;
-		solve(str, str_size, rm, rm_size, start + 1, i + 1);
-		j++;
-	}
 }
 
 int main(int argc, char **argv)
@@ -94,13 +87,13 @@ int main(int argc, char **argv)
 	int		i = 0;
 	int		balance = 0;
 	int		remove = 0;
+	int		mask;
+	int		max_mask;
 
 	while (str[i])
 	{
 		if (str[i] == '(')
-		{
 			balance++;
-		}
 		else if (str[i] == ')')
 		{
 			if (balance > 0)
@@ -108,11 +101,17 @@ int main(int argc, char **argv)
 			else
 				remove ++;
 		}
-
 		i++;
 	}
 	remove += balance;
-	int rm[remove];
-	solve(str, i, rm, remove, 0, 0);
+
+	mask = 0;
+	max_mask = 1 << i;
+	while (mask < max_mask)
+	{
+		if (check_bits(mask) == remove && is_balanced(str, mask))
+			print_solution(str, mask);
+		mask++;
+	}
 	return (0);
 }

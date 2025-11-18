@@ -30,7 +30,7 @@ int	main(void)
 {
 	int a = '2', b = '1', c = '6', d = '4', e = '5', f = '3';
 
-	// Create nodes
+	// ex00 Create nodes
 	t_btree *root = btree_create_node(&a);
 	root->left = btree_create_node(&b);
 	root->right = btree_create_node(&c);
@@ -53,8 +53,10 @@ int	main(void)
 	btree_apply_suffix(root, &print_item);
 	printf("\n\n");
 
-	// Reset tree (leaks)
+	free_tree(root);
 	root = NULL;
+
+	// ex04 Insert ordered
 	btree_insert_data(&root, "elk", ft_strcmp);
 	btree_insert_data(&root, "cat", ft_strcmp);
 	btree_insert_data(&root, "dog", ft_strcmp);
@@ -66,14 +68,18 @@ int	main(void)
 	btree_apply_infix(root, &print_item);
 	printf("\n\n");
 
+	// ex05 Binary search
 	char *find = "cat";
 	char *result = (char *)btree_search_item(root, find, ft_strcmp);
 	result ? printf("Found: %s\n", result) : printf("Not found: %s\n", find);
 	find = "ray";
 	result = (char *)btree_search_item(root, find, ft_strcmp);
 	result ? printf("Found: %s\n\n", result) : printf("Not found: %s\n\n", find);
+
+	// ex06 Tree Depth
 	printf("Depth: %d\n", btree_level_count(root));
 
+	// ex07 Apply function conditional with level
 	btree_apply_by_level(root, print_node);
 	free_tree(root);
 	return (0);
